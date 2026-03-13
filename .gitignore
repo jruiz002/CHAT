@@ -1,0 +1,21 @@
+# Binarios compilados
+server/servidor
+client/cliente
+
+# Archivos de debug
+*.o
+*.out
+*.dSYM/
+
+# Archivos de editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
