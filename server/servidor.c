@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
+#include <signal.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -35,9 +36,11 @@ static Cliente         lista[MAX_CLIENTES];
 static int             num_clientes = 0;
 static pthread_mutex_t mutex_lista  = PTHREAD_MUTEX_INITIALIZER;
 
-/* Envía un paquete ya armado a un socket */
+/* Envía un paquete ya armado a un socket.
+ * MSG_NOSIGNAL evita SIGPIPE si el cliente se desconectó:
+ * send() devuelve -1 en vez de matar el servidor. */
 static void enviar_pkt(int sockfd, ChatPacket *pkt) {
-    send(sockfd, pkt, sizeof(ChatPacket), 0);
+    send(sockfd, pkt, sizeof(ChatPacket), MSG_NOSIGNAL);
 }
 
 /* Envía CMD_OK con mensaje de confirmación */
@@ -259,7 +262,11 @@ static void handle_status(int sockfd, ChatPacket *pkt) {
     if (strcmp(pkt->payload, STATUS_ACTIVO)   != 0 &&
         strcmp(pkt->payload, STATUS_OCUPADO)  != 0 &&
         strcmp(pkt->payload, STATUS_INACTIVO) != 0) {
-        enviar_error(sockfd, pkt->sender, "Status inválido. Usa: ACTIVO, OCUPADO o INACTIVO");
+        char errmsg[128];
+        snprintf(errmsg, sizeof(errmsg),
+                 "Status invalido. Usa: %s, %s o %s",
+                 STATUS_ACTIVO, STATUS_OCUPADO, STATUS_INACTIVO);
+        enviar_error(sockfd, pkt->sender, errmsg);
         return;
     }
 
@@ -312,15 +319,18 @@ static void *thread_inactividad(void *arg) {
             double segundos = difftime(ahora, lista[i].ultimo_mensaje);
             if (segundos >= INACTIVITY_TIMEOUT) {
                 strncpy(lista[i].status, STATUS_INACTIVO, 15);
-                printf("[~] %s marcado como INACTIVO por timeout\n", lista[i].username);
+                printf("[~] %s marcado como %s por timeout\n", lista[i].username, STATUS_INACTIVO);
 
                 /* Avisar al cliente que su status cambió */
                 ChatPacket notif;
                 memset(&notif, 0, sizeof(notif));
                 notif.command = CMD_MSG;
-                strncpy(notif.sender,  "SERVER",             31);
-                strncpy(notif.target,  lista[i].username,    31);
-                strncpy(notif.payload, "Tu status cambió a INACTIVO por inactividad", 956);
+                strncpy(notif.sender,  "SERVER",          31);
+                strncpy(notif.target,  lista[i].username, 31);
+                char msg_inact[128];
+                snprintf(msg_inact, sizeof(msg_inact),
+                         "Tu status cambio a %s por inactividad", STATUS_INACTIVO);
+                strncpy(notif.payload, msg_inact, 956);
                 notif.payload_len = (uint16_t)strlen(notif.payload);
                 enviar_pkt(lista[i].sockfd, &notif);
             }
@@ -415,6 +425,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Uso: %s <puerto>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
+
+    signal(SIGPIPE, SIG_IGN);
 
     int puerto = atoi(argv[1]);
     if (puerto <= 0 || puerto > 65535) {
