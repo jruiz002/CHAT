@@ -25,7 +25,7 @@ typedef struct {
     int      sockfd;                  /* socket del cliente              */
     char     username[32];            /* nombre de usuario               */
     char     ip[INET_ADDRSTRLEN];     /* IP del cliente                  */
-    char     status[16];              /* ACTIVO / OCUPADO / INACTIVO     */
+    char     status[16];              /* ACTIVE / BUSY / INACTIVE        */
     int      activo;                  /* 1 = conectado, 0 = libre        */
     time_t   ultimo_mensaje;          /* timestamp del último mensaje     */
 } Cliente;
@@ -97,7 +97,7 @@ static void tocar_actividad(int sockfd) {
     for (int i = 0; i < MAX_CLIENTES; i++) {
         if (lista[i].activo && lista[i].sockfd == sockfd) {
             lista[i].ultimo_mensaje = time(NULL);
-            /* Si estaba INACTIVO, vuelve a ACTIVO automáticamente */
+            /* Si estaba INACTIVE, vuelve a ACTIVE automáticamente */
             if (strcmp(lista[i].status, STATUS_INACTIVO) == 0)
                 strncpy(lista[i].status, STATUS_ACTIVO, 15);
             break;
@@ -201,7 +201,7 @@ static void handle_direct(int sockfd, ChatPacket *pkt) {
 static void handle_list(int sockfd, ChatPacket *pkt) {
     tocar_actividad(sockfd);
 
-    /* Construir payload: "user1,ACTIVO;user2,OCUPADO;..." */
+    /* Construir payload: "user1,ACTIVE;user2,BUSY;..." */
     char lista_str[957] = "";
     pthread_mutex_lock(&mutex_lista);
     int primero = 1;

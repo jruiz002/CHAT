@@ -27,9 +27,9 @@
 /* ─────────────────────────────────────────────────
  * Valores de status
  * ───────────────────────────────────────────────── */
-#define STATUS_ACTIVO   "ACTIVO"
-#define STATUS_OCUPADO  "OCUPADO"
-#define STATUS_INACTIVO "INACTIVO"
+#define STATUS_ACTIVO   "ACTIVE"
+#define STATUS_OCUPADO  "BUSY"
+#define STATUS_INACTIVO "INACTIVE"
 
 /* ─────────────────────────────────────────────────
  * Timeout de inactividad (segundos)
@@ -46,7 +46,7 @@
  * CMD_DIRECT      : sender=username  target=destinatario payload=mensaje
  * CMD_LIST        : sender=username  target=""          payload=""
  * CMD_INFO        : sender=username  target=usuario     payload=""
- * CMD_STATUS      : sender=username  target=""          payload=ACTIVO|OCUPADO|INACTIVO
+ * CMD_STATUS      : sender=username  target=""          payload=ACTIVE|BUSY|INACTIVE
  * CMD_LOGOUT      : sender=username  target=""          payload=""
  *
  * CMD_OK          : sender="SERVER"  target=usuario     payload=descripción

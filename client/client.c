@@ -19,7 +19,7 @@
 /* ─── Estado global del cliente ─────────────────── */
 static int  sockfd   = -1;
 static char mi_usuario[32] = "";
-static char mi_status[16]  = "ACTIVO";
+static char mi_status[16]  = "ACTIVE";
 
 /* ════════════════════════════════════════════════
  * Utilidades de envío
@@ -55,9 +55,9 @@ static void mostrar_ayuda(void) {
            "│ /broadcast <mensaje>     │ Mensaje a todos      │\n"
            "│ /msg <usuario> <mensaje> │ Mensaje privado      │\n"
            "│ /status <estado>         │ Cambiar estado       │\n"
-           "│   estados: ACTIVO        │                      │\n"
-           "│            OCUPADO       │                      │\n"
-           "│            INACTIVO      │                      │\n"
+           "│   estados: ACTIVE        │                      │\n"
+           "│            BUSY          │                      │\n"
+           "│            INACTIVE      │                      │\n"
            "│ /list                    │ Ver usuarios online  │\n"
            "│ /info <usuario>          │ Info de un usuario   │\n"
            "│ /help                    │ Mostrar esta ayuda   │\n"
@@ -228,7 +228,7 @@ static int procesar_input(char *linea) {
         if (strcmp(estado, STATUS_ACTIVO)   != 0 &&
             strcmp(estado, STATUS_OCUPADO)  != 0 &&
             strcmp(estado, STATUS_INACTIVO) != 0) {
-            printf("[!] Status válidos: ACTIVO, OCUPADO, INACTIVO\n");
+            printf("[!] Status válidos: ACTIVE, BUSY, INACTIVE\n");
             return 0;
         }
         enviar_cmd(CMD_STATUS, NULL, estado);

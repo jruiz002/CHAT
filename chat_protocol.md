@@ -44,12 +44,12 @@
 #define CMD_DISCONNECTED 13
 
 /* ── Valores de status ── */
-#define STATUS_ACTIVO   "ACTIVO"
-#define STATUS_OCUPADO  "OCUPADO"
-#define STATUS_INACTIVO "INACTIVO"
+#define STATUS_ACTIVO   "ACTIVE"
+#define STATUS_OCUPADO  "BUSY"
+#define STATUS_INACTIVO "INACTIVE"
 
 /* ── Timeouts ── */
-#define INACTIVITY_TIMEOUT 60   /* segundos sin actividad → INACTIVO */
+#define INACTIVITY_TIMEOUT 60   /* segundos sin actividad → INACTIVE */
 
 /* ── Struct principal: siempre 1024 bytes ── */
 typedef struct {
@@ -80,12 +80,12 @@ typedef struct {
 | `CMD_DIRECT` | username | **destinatario** | mensaje |
 | `CMD_LIST` | username | *(vacío)* | *(vacío)* |
 | `CMD_INFO` | username | **usuario a consultar** | *(vacío)* |
-| `CMD_STATUS` | username | *(vacío)* | `ACTIVO` / `OCUPADO` / `INACTIVO` |
+| `CMD_STATUS` | username | *(vacío)* | `ACTIVE` / `BUSY` / `INACTIVE` |
 | `CMD_LOGOUT` | username | *(vacío)* | *(vacío)* |
 | `CMD_OK` | `"SERVER"` | destinatario | mensaje de confirmación |
 | `CMD_ERROR` | `"SERVER"` | destinatario | descripción del error |
 | `CMD_MSG` | remitente original | destinatario o `"ALL"` | mensaje |
-| `CMD_USER_LIST` | `"SERVER"` | solicitante | `"alice,ACTIVO;bob,OCUPADO;..."` |
+| `CMD_USER_LIST` | `"SERVER"` | solicitante | `"alice,ACTIVE;bob,BUSY;..."` |
 | `CMD_USER_INFO` | `"SERVER"` | solicitante | `"IP,STATUS"` |
 | `CMD_DISCONNECTED` | `"SERVER"` | `"ALL"` | username que salió |
 
@@ -123,7 +123,7 @@ recv(fd, &pkt, sizeof(pkt), MSG_WAITALL);
 Cliente                    Servidor
   │── CMD_REGISTER ────────►│  sender="alice", payload="alice"
   │◄─ CMD_OK ──────────────│  payload="Bienvenido alice"
-  │                         │  [crea thread, status=ACTIVO]
+  │                         │  [crea thread, status=ACTIVE]
   │
   │  (nombre ya existe)
   │◄─ CMD_ERROR ───────────│  payload="Usuario ya existe"
@@ -152,14 +152,14 @@ Cliente A (alice)          Servidor                  Cliente B (bob)
 ```
 Cliente                    Servidor
   │── CMD_LIST ────────────►│
-  │◄─ CMD_USER_LIST ────────│  payload="alice,ACTIVO;bob,OCUPADO;carlos,INACTIVO"
+  │◄─ CMD_USER_LIST ────────│  payload="alice,ACTIVE;bob,BUSY;carlos,INACTIVE"
 ```
 
 ### 5.5 Info de usuario
 ```
 Cliente                    Servidor
   │── CMD_INFO ────────────►│  target="bob"
-  │◄─ CMD_USER_INFO ────────│  payload="192.168.1.10,OCUPADO"
+  │◄─ CMD_USER_INFO ────────│  payload="192.168.1.10,BUSY"
   │
   │  (no existe)
   │◄─ CMD_ERROR ───────────│  payload="Usuario no conectado"
@@ -168,12 +168,12 @@ Cliente                    Servidor
 ### 5.6 Cambio de status
 ```
 Cliente                    Servidor
-  │── CMD_STATUS ───────────►│  payload="OCUPADO"
-  │◄─ CMD_OK ───────────────│  payload="OCUPADO"
+  │── CMD_STATUS ───────────►│  payload="BUSY"
+  │◄─ CMD_OK ───────────────│  payload="BUSY"
   │   [cliente actualiza UI] │
 
   [sin actividad por INACTIVITY_TIMEOUT segundos]
-  │◄─ CMD_MSG ──────────────│  sender="SERVER", payload="Tu status cambió a INACTIVO"
+  │◄─ CMD_MSG ──────────────│  sender="SERVER", payload="Tu status cambió a INACTIVE"
   │   [cliente actualiza UI] │
 ```
 
@@ -225,7 +225,7 @@ pthread_mutex_t mutex_lista  = PTHREAD_MUTEX_INITIALIZER;
 |---|---|
 | `/broadcast <mensaje>` | Envía `CMD_BROADCAST` |
 | `/msg <usuario> <mensaje>` | Envía `CMD_DIRECT` |
-| `/status <ACTIVO\|OCUPADO\|INACTIVO>` | Envía `CMD_STATUS` |
+| `/status <ACTIVE\|BUSY\|INACTIVE>` | Envía `CMD_STATUS` |
 | `/list` | Envía `CMD_LIST` |
 | `/info <usuario>` | Envía `CMD_INFO` |
 | `/help` | Muestra ayuda local |
