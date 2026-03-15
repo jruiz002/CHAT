@@ -76,6 +76,15 @@ static int buscar_por_nombre(const char *username) {
     return -1;
 }
 
+/* Busca un cliente por IP (debe llamarse con mutex tomado) */
+static int buscar_por_ip(const char *ip) {
+    for (int i = 0; i < MAX_CLIENTES; i++) {
+        if (lista[i].activo && strcmp(lista[i].ip, ip) == 0)
+            return i;
+    }
+    return -1;
+}
+
 /* Busca un slot libre (debe llamarse con mutex tomado) */
 static int buscar_slot_libre(void) {
     for (int i = 0; i < MAX_CLIENTES; i++) {
@@ -118,7 +127,14 @@ static void handle_register(int sockfd, const char *ip, ChatPacket *pkt) {
     /* ¿Nombre ya existe? */
     if (buscar_por_nombre(username) >= 0) {
         pthread_mutex_unlock(&mutex_lista);
-        enviar_error(sockfd, username, "El nombre de usuario ya está en uso, vuelva a ingresar con un nombre diferente");
+        enviar_error(sockfd, username, "El nombre de usuario ya está en uso");
+        return;
+    }
+
+    /* ¿IP ya existe? */
+    if (buscar_por_ip(ip) >= 0) {
+        pthread_mutex_unlock(&mutex_lista);
+        enviar_error(sockfd, username, "Ya existe un usuario conectado desde esta IP");
         return;
     }
 
