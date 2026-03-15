@@ -310,8 +310,21 @@ int main(int argc, char *argv[]) {
     }
     printf("Conectado. Registrando usuario '%s'...\n\n", username);
 
-    /* ── Enviar CMD_REGISTER ── */
+    /* ── Enviar CMD_REGISTER y esperar respuesta ── */
     enviar_cmd(CMD_REGISTER, NULL, username);
+
+    ChatPacket resp_reg;
+    memset(&resp_reg, 0, sizeof(resp_reg));
+    if (recv(sockfd, &resp_reg, sizeof(resp_reg), MSG_WAITALL) <= 0) {
+        fprintf(stderr, "Error al recibir respuesta del servidor.\n");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
+    if (resp_reg.command == CMD_ERROR) {
+        fprintf(stderr, "[ERROR] %s\n", resp_reg.payload);
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
 
     /* ── Lanzar thread receptor ── */
     pthread_t tid_rx;

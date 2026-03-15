@@ -118,7 +118,7 @@ static void handle_register(int sockfd, const char *ip, ChatPacket *pkt) {
     /* ¿Nombre ya existe? */
     if (buscar_por_nombre(username) >= 0) {
         pthread_mutex_unlock(&mutex_lista);
-        enviar_error(sockfd, username, "El nombre de usuario ya está en uso");
+        enviar_error(sockfd, username, "El nombre de usuario ya está en uso, vuelva a ingresar con un nombre diferente");
         return;
     }
 
