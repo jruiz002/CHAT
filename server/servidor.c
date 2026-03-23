@@ -132,11 +132,11 @@ static void handle_register(int sockfd, const char *ip, ChatPacket *pkt) {
     }
 
     /* ¿IP ya existe? */
-    if (buscar_por_ip(ip) >= 0) {
-        pthread_mutex_unlock(&mutex_lista);
-        enviar_error(sockfd, username, "Ya existe un usuario conectado desde esta IP");
-        return;
-    }
+    /* if (buscar_por_ip(ip) >= 0) { */
+    /*     pthread_mutex_unlock(&mutex_lista); */
+    /*     enviar_error(sockfd, username, "Ya existe un usuario conectado desde esta IP"); */
+    /*     return; */
+    /* } */
 
     /* ¿Slot disponible? */
     int slot = buscar_slot_libre();
