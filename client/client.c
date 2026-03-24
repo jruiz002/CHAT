@@ -112,6 +112,12 @@ static void *thread_receptor(void *arg) {
                         strncpy(mi_status, STATUS_ACTIVO,   15);
                 }
 
+                /* Si estaba INACTIVE y llega un mensaje, volver a ACTIVE */
+                if (strcmp(mi_status, STATUS_INACTIVO) == 0) {
+                    strncpy(mi_status, STATUS_ACTIVO, 15);
+                    enviar_cmd(CMD_STATUS, NULL, STATUS_ACTIVO);
+                }
+
                 /* Mostrar el mensaje según su origen */
                 if (strcmp(pkt.target, "ALL") == 0)
                     printf("\n[General] %s: %s\n> ", pkt.sender, pkt.payload);
